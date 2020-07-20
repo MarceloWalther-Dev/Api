@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-Br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja de game</title>
+    <style>
+
+        ul{
+            display:flex;
+        }
+        .lista{
+            width:30%;
+            display:flex;
+            justify-content:space-between;
+        }
+        .buttons{
+            margin-left: auto;
+            margin-right:10px;
+        }
+    </style>
+</head>
+<body>
+    <hr>
+    <h4>Lista de games</h4>
+    <div class="lista-games">
+        <ul id="games"style="display:flex; flex-direction:column;"></ul>
+    </div>
+    <div class="button" style="display:flex;">
+        <button type="submit" onclick="document.location.reload(true)" >Atualizar</button>
+    </div>
+    <hr>
+    <h4>Adicionar Game</h4>
+    <div class="inputs-deletar">
+        <input type="text" name="title" id="title" placeholder="Título"><br><br>
+        <input type="text" name="year" id="year" placeholder="Ano"><br><br>
+        <input type="text" name="price" id="price" placeholder="Preço"><br><br>
+
+        <button type="submit" onclick="createGame()/* , document.location.reload(true); */">Criar</button>
+    </div>
+    <hr>
+    <h4>Editar Game</h4>
+        <div class="inputs-edicao">
+            <input type="text" name="idEdit"    id="idEdit" placeholder="Id" readonly><br><br>
+            <input type="text" name="titleEdit" id="titleEdit" placeholder="Título"><br><br>
+            <input type="text" name="yearEdit"  id="yearEdit"  placeholder="Ano"><br><br>
+            <input type="text" name="priceEdit" id="priceEdit" placeholder="Preço"><br><br> 
+            <button type="submit" onclick="updateGame()/* , document.location.reload(true); */ ">Salve</button>              
+        </div>
+
+
+
+
+<!-- <script src="./index.js"></script> -->
+<script src="http://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> 
+<script>
+
+//GET
+    axios.get("http://localhost:8081/games")
+        .then(res => {
+            
+            const games = res.data
+            let lista = document.getElementById("games");
+
+            /* function ids(){    
+                var ids = games.map(game => {
+                    return game.id
+                })
+                return ids[ids.length - 1] +1
+            } */
+            
+
+            
+            games.forEach(game => {
+                let item = document.createElement("li");
+                
+                item.setAttribute("data-id", game.id);
+                item.setAttribute("data-title", game.title);
+                item.setAttribute("data-year", game.year);
+                item.setAttribute("data-price", game.price);
+               
+                item.classList.add("lista")
+
+                item.innerHTML =`id:(${game.id}) - Titulo: ${ game.title} - Ano ${game.year} - Preço: ${ game.price} `
+                //BTN DELET
+                    let delet = document.createElement("button");
+                    delet.classList.add("buttons")
+                    delet.innerHTML = "Deletar"
+                    delet.addEventListener("click",function() { deletGame(item)})
+                    item.appendChild(delet)
+                // BTN EDITAR
+                    const editBtn = document.createElement("button");
+                    editBtn.innerHTML = "Editar"
+                    editBtn.addEventListener("click",function(){loadForm(item)});
+                    item.appendChild(editBtn);
+                lista.appendChild(item);
+            })
+        }).catch(error => {console.log(error)});
+
+
+        
+        
+        
+//SAVE     
+        function createGame() {
+            
+            const titleInput = document.getElementById("title");
+            const yearInput = document.getElementById("year");
+            const priceInput = document.getElementById("price");
+        
+            
+            let game ={
+                
+            id: 2,
+            title: titleInput.value,
+            year: parseInt(yearInput.value),
+            price:parseInt( priceInput.value)
+        }
+        
+
+        axios.post("http://localhost:8081/games", game).then(res => {
+            if(res.status === 200){
+                alert("Game saved");
+            }
+        }).catch(error => {console.log(error)});
+    };
+    
+    
+//DELET
+       function deletGame(listItem){ 
+            const id = listItem.getAttribute("data-id");
+            axios.delete("http://localhost:8081/games/"+id).then(res =>alert("game deletado")).catch(error =>console.log(error));
+        }    
+    
+    
+     
+//Edit
+
+        function loadForm(listItem){ 
+            const id = listItem.getAttribute("data-id");
+            const title = listItem.getAttribute("data-title");
+            const year = listItem.getAttribute("data-year");
+            const price = listItem.getAttribute("data-price");
+
+            const idField = document.getElementById("idEdit").value = id;
+            const titleField = document.getElementById("titleEdit").value = title ;
+            const yearField = document.getElementById("yearEdit").value = year;
+            const priceField = document.getElementById("priceEdit").value = price;
+            
+           
+        }
+
+
+        function updateGame(){ 
+            const idInput = document.getElementById("idEdit")
+            const titleInput = document.getElementById("titleEdit");
+            const yearInput = document.getElementById("yearEdit");
+            const priceInput = document.getElementById("priceEdit");
+        
+            
+            let game ={           
+                title: titleInput.value,
+                year: parseInt(yearInput.value),
+                price:parseInt( priceInput.value)
+        }
+        
+
+        axios.put("http://localhost:8081/games/"+ idInput.value, game).then(res => {
+            if(res.status === 200){
+                alert("Game atualizado");
+            }
+        }).catch(error =>{ console.log(error)});
+    };
+    
+
+        
+
+ 
+
+</script>
+</body>
+</html>
